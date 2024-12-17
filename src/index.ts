@@ -1,4 +1,4 @@
-import type { WebSocket } from 'ws';
+import { WebSocket } from 'ws';
 import {WebSocketServer} from 'ws';
 import {v4 as uuidv4} from 'uuid';
 type client = {
@@ -19,13 +19,12 @@ wss.on('connection',function connection(ws){
     console.log(user.id + "  "+ user.connection);
     ws.on('message', function message(data){
         console.log(`recieved: ${data}`);
-        if(data.toString() === 'info'){
-            ws.send("WebSocket connected to PORT 8080");
-            clients.map((user, id)=>{
-                ws.send(`${id} - ${user.id}`);
-            })
-        }
+        wss.clients.forEach(function(client){
+            if(client!==ws && client.readyState===WebSocket.OPEN){
+                client.send(data.toString());
+                console.log(`Sent to everyone: ${data}`);
+            }
+        })
     });
     ws.send("Connection on on port 8080");
 });
-
